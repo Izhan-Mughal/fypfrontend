@@ -4,7 +4,7 @@ import Cookies from 'js-cookie'; // Import the library for handling cookies
 
 const AuthContext = createContext();
 
-const AuthProviders = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
@@ -71,4 +71,4 @@ const useAuth = () => {
   return context;
 };
 
-export { AuthProviders, useAuth };
+export { AuthProvider, useAuth };

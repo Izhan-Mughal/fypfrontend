@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AnimationRevealPage from "helpers/AnimationRevealPage.js";
 import { Container as ContainerBase } from "components/misc/Layouts";
+import { useAuth } from "./AuthContext1";
+import { useNavigate } from "react-router-dom";
 import tw from "twin.macro";
 import styled from "styled-components";
-import {css} from "styled-components/macro"; //eslint-disable-line
+import { css } from "styled-components/macro"; //eslint-disable-line
 import illustration from "images/login-illustration.svg";
 import logo from "images/logo.svg";
 import googleIconImageSrc from "images/google-icon.png";
 import twitterIconImageSrc from "images/twitter-icon.png";
 import { ReactComponent as LoginIcon } from "feather-icons/dist/icons/log-in.svg";
+import { useFormik } from "formik";
+import { LoginSchema } from "schemas/LoginSchema.js";
+import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
 
 const Container = tw(ContainerBase)`min-h-screen bg-primary-900 text-white font-medium flex justify-center -m-8`;
 const Content = tw.div`max-w-screen-xl m-0 sm:mx-20 sm:my-16 bg-white text-gray-900 shadow sm:rounded-lg flex justify-center flex-1`;
@@ -53,11 +59,15 @@ const IllustrationImage = styled.div`
   ${tw`m-12 xl:m-16 w-full max-w-sm bg-contain bg-center bg-no-repeat`}
 `;
 
-export default ({
-  logoLinkUrl = "#",
-  illustrationImageSrc = illustration,
-  headingText = "Sign In To Treact",
-  socialButtons = [
+const Login = () => {
+  const [isMounted, setIsMounted] = useState(true);
+  const logoLinkUrl = "#";
+  const illustrationImageSrc = illustration;
+  const headingText = "Sign In To HyperKonnect";
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const socialButtons = [
     {
       iconImageSrc: googleIconImageSrc,
       text: "Sign In With Google",
@@ -68,24 +78,78 @@ export default ({
       text: "Sign In With Twitter",
       url: "https://twitter.com"
     }
-  ],
-  submitButtonText = "Sign In",
-  SubmitButtonIcon = LoginIcon,
-  forgotPasswordUrl = "#",
-  signupUrl = "#",
+  ];
+  const submitButtonText = "Sign In";
+  const SubmitButtonIcon = LoginIcon;
+  const forgotPasswordUrl = "/forgetPassword";
+  const signupUrl = "/register";
+  useEffect(() => {
+    setIsMounted(true);
 
-}) => (
-  <AnimationRevealPage>
-    <Container>
-      <Content>
-        <MainContainer>
-          <LogoLink href={logoLinkUrl}>
-            <LogoImage src={logo} />
-          </LogoLink>
-          <MainContent>
-            <Heading>{headingText}</Heading>
-            <FormContainer>
-              <SocialButtonsContainer>
+    // Cleanup function
+
+  }, []);
+  const initialValues = {
+    email: "",
+    password: "",
+
+
+  }
+
+  const { values, errors, handleBlur, touched, handleChange, handleSubmit, setFieldValue } = useFormik({
+    initialValues: initialValues,
+    validationSchema: LoginSchema,
+    onSubmit: (values) => {
+      console.log(values);
+      setIsMounted(false);
+      const handleApiCall = async () => {
+        //       email: 'izhan28@gmail.com',
+        // password: 'izhan123',
+        try {
+          // e.preventDefault();
+          const response = await axios.post('http://localhost:5000/api/v1/users/login', {
+            email: values?.email,
+            password: values?.password,
+          }, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Accept": "application/json"
+          });
+
+          const apiResponse = response.data;
+          console.log(apiResponse)
+          setIsMounted(true);
+          // Assuming login is an asynchronous function that returns a Promise
+          await login(apiResponse.data.user._id, apiResponse.data.accessToken, apiResponse.data.refreshToken);
+
+          // Check if the component is still mounted before navigating
+          if (isMounted) {
+            navigate('/dashboard/');
+          }
+        } catch (error) {
+          console.log('Error:', error,);
+          setIsMounted(true);
+          toast.error(error?.response?.data)
+
+        }
+      };
+      handleApiCall();
+    }
+  })
+
+
+  return (
+    <AnimationRevealPage>
+      <Container>
+        <Content>
+          <MainContainer>
+            <LogoLink href={logoLinkUrl}>
+              <LogoImage src={logo} />
+            </LogoLink>
+            <MainContent>
+              <Heading>{headingText}</Heading>
+              <FormContainer>
+                {/* <SocialButtonsContainer>
                 {socialButtons.map((socialButton, index) => (
                   <SocialButton key={index} href={socialButton.url}>
                     <span className="iconContainer">
@@ -97,33 +161,60 @@ export default ({
               </SocialButtonsContainer>
               <DividerTextContainer>
                 <DividerText>Or Sign in with your e-mail</DividerText>
-              </DividerTextContainer>
-              <Form>
-                <Input type="email" placeholder="Email" />
-                <Input type="password" placeholder="Password" />
-                <SubmitButton type="submit">
-                  <SubmitButtonIcon className="icon" />
-                  <span className="text">{submitButtonText}</span>
-                </SubmitButton>
-              </Form>
-              <p tw="mt-6 text-xs text-gray-600 text-center">
-                <a href={forgotPasswordUrl} tw="border-b border-gray-500 border-dotted">
-                  Forgot Password ?
-                </a>
-              </p>
-              <p tw="mt-8 text-sm text-gray-600 text-center">
-                Dont have an account?{" "}
-                <a href={signupUrl} tw="border-b border-gray-500 border-dotted">
-                  Sign Up
-                </a>
-              </p>
-            </FormContainer>
-          </MainContent>
-        </MainContainer>
-        <IllustrationContainer>
-          <IllustrationImage imageSrc={illustrationImageSrc} />
-        </IllustrationContainer>
-      </Content>
-    </Container>
-  </AnimationRevealPage>
-);
+              </DividerTextContainer> */}
+                <Toaster />
+                <Form onSubmit={handleSubmit}>
+                  <label htmlFor="email" className="mb-0 small" >Enter Email *</label>
+                  <Input name="email" onChange={handleChange} onBlur={handleBlur} value={values.email} id="email" type="email" placeholder="Email" />
+                  {errors.email && touched.email ? <div class="alert alert-danger mt-2" role="alert">
+                    {errors.email}
+                  </div> : ""}
+                  <label className="mt-2 small" htmlFor="password">Enter Password * </label>
+                  <Input onChange={handleChange} onBlur={handleBlur} type="password" value={values.password} name="password" id="password" placeholder="Password" />
+                  {errors.password && touched.password ? <div class="alert alert-danger  mt-2" role="alert">
+                    {errors.password}
+                  </div> : ""}
+                  {values.password === "" || values.email === "" ?
+                    <SubmitButton type="submit" disabled>
+                      <SubmitButtonIcon className="icon" />
+                      <span className="text">{submitButtonText}</span>
+                    </SubmitButton>
+                    :
+                    <SubmitButton type="submit" >
+                      <SubmitButtonIcon className="icon" />
+                      <span className="text d-flex align-items-center gap-4">{submitButtonText}
+                      {
+isMounted ? "" :
+                        <div class="spinner-border text-light small" style={{ width: "15px", height: "15px" }} role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        }
+                      </span>
+
+                    </SubmitButton>
+                  }
+                </Form>
+                <p tw="mt-6 text-xs text-gray-600 text-center">
+                  <a href={forgotPasswordUrl} tw="border-b border-gray-500 border-dotted">
+                    Forgot Password ?
+                  </a>
+                </p>
+                <p tw="mt-8 text-sm text-gray-600 text-center">
+                  Dont have an account?{" "}
+                  <a href={signupUrl} tw="border-b border-gray-500 border-dotted">
+                    Sign Up
+                  </a>
+                </p>
+              </FormContainer>
+            </MainContent>
+          </MainContainer>
+          <IllustrationContainer>
+            <IllustrationImage imageSrc={illustrationImageSrc} />
+          </IllustrationContainer>
+        </Content>
+      </Container>
+    </AnimationRevealPage>
+  )
+};
+
+export default Login;

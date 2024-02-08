@@ -119,16 +119,21 @@ import ThankYouPage from "ThankYouPage.js";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { SettingsProvider } from "dashboard/app/contexts/SettingsContext";
-import { AuthProvider } from "dashboard/app/contexts/JWTAuthContext";
+// import { AuthProvider } from "dashboard/app/contexts/JWTAuthContext";
 // import  {useAuth,AuthProvider}  from "pages/AuthContext1";
-import { AuthProviders } from "pages/AuthContext1";
+// import { AuthProviders } from "pages/AuthContext1";
+import { AuthProvider } from "pages/AuthContext1";
+import RequireAuth from "pages/RequireAuth";
 import { CssBaseline } from "@mui/material";
 // import routes from './routes';
 // import 'dashboard/fake-db';
 import routes from "dashboard/app/routes";
-import RequireAuth from "pages/RequireAuth";
+// import RequireAuth from "pages/RequireAuth";
 import Login from "pages/Login";
 import Signup from "pages/Signup";
+import Verify from "pages/Verify";
+import ForgetPassword from "pages/ForgetPassword";
+import ResetPassword from "pages/ResetPassword";
 
 
 export default function App() {
@@ -139,27 +144,21 @@ export default function App() {
   return (
     <>
       <GlobalStyles />
-      <AuthProviders>
 
-        <Routes>
-          <Route path="/components/:type/:subtype/:name" element={<ComponentRenderer />} />
-          <Route path="/components/:type/:name" element={<ComponentRenderer />} />
-          <Route path="/thank-you" element={<ThankYouPage />} />
-          <Route path="/" element={<HotelTravelLandingPage />} />
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/Register" element={<Signup/>}/>
-        </Routes>
-        <AuthProviders>
+
+
+      <AuthProvider>
+        <RequireAuth>
           <Routes>
 
-            <Route path="/dashboard/*" auth={authRoles.admin} element={
+            <Route path="/dashboard/*" element={
               <SettingsProvider>
-                <AuthProvider>
+                <>
                   <MatxTheme>
                     <CssBaseline />
                     {content}
                   </MatxTheme>
-                </AuthProvider>
+                </>
               </SettingsProvider>}
             />
             {/* <Route path="/dashboard/Profile" auth={authRoles.admin} element={<SettingsProvider>
@@ -172,10 +171,21 @@ export default function App() {
         </SettingsProvider>} /> */}
             {/* <Route path="/" element={<MainLandingPage />} /> */}
             <Route path="/dashboard/" auth={authRoles.admin} element={<Applicationsz />} />
-          </Routes>
-        </AuthProviders>
+            <Route path="/components/:type/:subtype/:name" element={<ComponentRenderer />} />
+          <Route path="/components/:type/:name" element={<ComponentRenderer />} />
+          <Route path="/thank-you" element={<ThankYouPage />} />
+          <Route path="/" element={<HotelTravelLandingPage />} />
 
-      </AuthProviders>
+          <Route path="/login" element={<Login />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="/forgetPassword" element={<ForgetPassword />} />
+          <Route path="/resetPassword" element={<ResetPassword />} />
+          <Route path="/Register" element={<Signup />} />
+          </Routes>
+        </RequireAuth>
+    
+      </AuthProvider>
+
 
     </>
   );

@@ -1,19 +1,29 @@
-import React from 'react'
-import { useLocation, Navigate, Outlet } from 'react-router-dom'
-// import useAuth from 'dashboard/app/hooks/useAuth'
-import { useAuth, AuthProviders } from '../pages/AuthContext1'
-import Login from './Login';
-const RequireAuth = () => {
-    const { user, isLoggedIn, login, logout } = useAuth();
+import React, { useContext } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { AuthProvider, useAuth } from "./AuthContext1";
 
+const RequireAuth = ({ children }) => {
+    const { isLoggedIn } = useAuth();
     const location = useLocation();
-    const isLoggedIn1 = true;
-    console.log(isLoggedIn);
-    return (
-        isLoggedIn ?
-            <Outlet />
-            : <Navigate to="/login" state={{ from: location }} replace />
-    )
-}
 
-export default RequireAuth
+    // List of routes that should not go through authentication
+    const nonAuthRoutes = ["/", "/login", "/register","/verify","/forgetPassword","/resetPassword"];
+
+    // Check if the current route is in the nonAuthRoutes array
+    const isNonAuthRoute = nonAuthRoutes.includes(location.pathname);
+
+    // If the user is not authenticated and the route requires authentication, redirect to login
+    if (!isLoggedIn && !isNonAuthRoute) {
+        return <Navigate to="/login" />;
+    }
+
+    // If the user is authenticated and the route is one of the non-auth routes, redirect to dashboard
+    if (isLoggedIn && isNonAuthRoute) {
+        return <Navigate to="/dashboard" />;
+    }
+
+    // Otherwise, render the children (component for the current route)
+    return <>{children}</>;
+};
+
+export default RequireAuth;

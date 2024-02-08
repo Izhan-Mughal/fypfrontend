@@ -12,6 +12,16 @@ import { ReactComponent as SignUpIcon } from "feather-icons/dist/icons/user-plus
 import CountryData from "./Countries.json"
 import CountrySelect from "./CountrySelect";
 import Select from 'react-select';
+import { useFormik } from "formik";
+import { SignUpSchema } from "schemas/Registration.js";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+
+
+
+
 
 const Container = tw(ContainerBase)`min-h-screen bg-primary-900 text-white font-medium flex justify-center -m-8`;
 const Content = tw.div`max-w-screen-xl m-0 sm:mx-20 sm:my-16 bg-white text-gray-900 shadow sm:rounded-lg flex justify-center flex-1`;
@@ -51,6 +61,7 @@ const DividerText = tw.div`leading-none px-2 inline-block text-sm text-gray-600 
 const Form = tw.form`mx-auto max-w-xs`;
 const Input = tw.input`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-2 mb-2 first:mt-0`;
 const TextArea = tw.textarea`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-2 first:mt-0`;
+const SelectInput = tw.select`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-2 first:mt-0`;
 const SubmitButton = styled.button`
   ${tw`mt-5 tracking-wide font-semibold bg-primary-500 text-gray-100 w-full py-4 rounded-lg hover:bg-primary-900 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none`}
   .icon {
@@ -73,8 +84,104 @@ const Signup = () => {
   }, [])
   const [FormState, setFormState] = useState(1);
   const [UserState, setUserState] = useState("");
+  const [isMounted, setIsMounted] = useState(true);
+  const navigate = useNavigate();
+  const initialValues = {
+    investortype: null,
+    email: "",
+    name: "",
+    password: "",
+    country: "",
+    industry: "",
+    companyLogo: undefined,
+    companyname: "",
+    pitchdeck: "",
+    targetcountry: "",
+    companyname: "",
+    pitchdeck: "",
+    companybio: "",
+    founder: "",
+    teamsize: "",
+    totalinvestment: "",
+    maxinvestment: "",
+    fundingraise: "",
+    website: "",
 
-  // console.log(CountryData);
+  }
+
+  const { values, errors, handleBlur, touched, handleChange, handleSubmit, setFieldValue } = useFormik({
+    initialValues: initialValues,
+    validationSchema: SignUpSchema,
+    onSubmit: (values) => {
+      console.log(values);
+      setIsMounted(false);
+      const handleApiCall = async (e) => {
+        //       email: 'izhan28@gmail.com',
+        // password: 'izhan123',
+        try {
+          // e.preventDefault();
+          const formData = await new FormData();
+          formData.append('email', values?.email);
+          formData.append('password', values?.password);
+          formData.append('industryType', values?.industry);
+          formData.append('userName', values?.name);
+          formData.append('country', values?.country);
+          formData.append('companyLogo', values?.companyLogo); // Assuming values.companyLogo is a File object
+          formData.append('companyBio', values?.companybio);
+          formData.append('pitchDeck', values?.pitchdeck);
+          formData.append('website', values?.website);
+          formData.append('totalInvestment', values?.totalinvestment);
+          formData.append('maxInvestment', values?.maxinvestment);
+          formData.append('fundingRaise', false);
+          formData.append('founderName', values?.founder);
+          formData.append('teamSize', values?.teamsize);
+          formData.append('facebook', null);
+          formData.append('linkedin', null);
+          formData.append('twitter', null);
+          formData.append('targetCountry', values?.targetcountry);
+          formData.append('accType', values?.investortype);
+
+          const response = await axios.post('http://localhost:5000/api/v1/users/register', formData, {
+            "Content-Type": "multipart/formdata",
+            'Accept': 'application/json',
+          });
+
+          const apiResponse = response.data;
+          toast(response.data.message);
+          setIsMounted(true);
+          // console.log(response.data)
+          // Assuming login is an asynchronous function that returns a Promise
+          // await login(apiResponse.data.user._id, apiResponse.data.accessToken, apiResponse.data.refreshToken);
+
+          // Check if the component is still mounted before navigating
+          if (isMounted) {
+            navigate('/login/');
+          }
+        } catch (error) {
+          console.log('Error:', error,);
+          toast.error(error?.response?.data)
+          console.log(initialValues)
+          console.log(initialValues)
+          setIsMounted(true);
+          console.log("values", values?.teamsize)
+        }
+      };
+      handleApiCall();
+    }
+  })
+  useEffect(() => {
+    let isMounted = true;
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  console.log(errors);
+  // const formik = useFormik();
+
+
+  // console.log(CountryData.countries[0].label);
   const logoLinkUrl = "#";
   const illustrationImageSrc = illustration;
   const headingText = "Sign Up For HyperKonnect";
@@ -94,7 +201,7 @@ const Signup = () => {
   const SubmitButtonIcon = SignUpIcon;
   const tosUrl = "#";
   const privacyPolicyUrl = "#";
-  const signInUrl = "#";
+  const signInUrl = "/login";
 
   return (
 
@@ -109,6 +216,7 @@ const Signup = () => {
             <MainContent>
               <Heading>{headingText}</Heading>
               <FormContainer>
+                <Toaster />
                 {/* <SocialButtonsContainer>
                 {socialButtons.map((socialButton, index) => (
                   <SocialButton key={index} href={socialButton.url}>
@@ -147,15 +255,25 @@ const Signup = () => {
                       </div>
                 }
 
-                <Form >
+                <Form onSubmit={handleSubmit}>
 
                   {FormState === 1 ?
                     <>
-                      <SubmitButton type="button" onClick={() => { setFormState(2); setUserState("Investor") }}>
+                      <SubmitButton type="button" onClick={() => {
+                        setFormState(2); setUserState("Investor"); setFieldValue(
+                          "investortype",
+                          "Investor"
+                        )
+                      }}>
                         <SubmitButtonIcon className="icon" />
                         <span className="text">Signup As Investor</span>
                       </SubmitButton>
-                      <SubmitButton type="button" onClick={() => { setFormState(2); setUserState("Startup") }}>
+                      <SubmitButton type="button" onClick={() => {
+                        setFormState(2); setUserState("Startup"); setFieldValue(
+                          "investortype",
+                          "Startup"
+                        )
+                      }}>
                         <SubmitButtonIcon className="icon" />
                         <span className="text">Signup As Startup</span>
                       </SubmitButton>
@@ -164,24 +282,72 @@ const Signup = () => {
                   {FormState === 2 ?
                     <>
                       <label htmlFor="email" className="mb-0 small" >Enter Email *</label>
-                      <Input name="email" id="email" type="email" placeholder="Email"  />
-                      <label  htmlFor="name" className="mt-2 small">Enter Username *</label>
-                      <Input type="text" name="name" id="name" placeholder="Username"  />
+                      <Input name="email" onChange={handleChange} onBlur={handleBlur} value={values.email} id="email" type="email" placeholder="Email" />
+                      {errors.email && touched.email ? <div class="alert alert-danger" role="alert">
+                        {errors.email}
+                      </div> : ""}
+
+                      <label htmlFor="name" className="mt-2 small">Enter Username *</label>
+                      <Input type="text" value={values.name} name="name" onChange={handleChange} onBlur={handleBlur} id="name" placeholder="Username" />
+                      {errors.name && touched.name ? <div class="alert alert-danger" role="alert">
+                        {errors.name}
+                      </div> : ""}
                       <label className="mt-2 small" htmlFor="password">Enter Password * </label>
-                      <Input type="password" name="password" id="password"  placeholder="Password"  />
+                      <Input onChange={handleChange} onBlur={handleBlur} type="password" value={values.password} name="password" id="password" placeholder="Password" />
+                      {errors.password && touched.password ? <div class="alert alert-danger" role="alert">
+                        {errors.password}
+                      </div> : ""}
                       <label className="mt-2 small" htmlFor="country">Enter Country * </label>
-                      <CountrySelect
+                      {/* <CountrySelect
                         id="country"
                         name="country"
-
+                        onChange={handleChange} onBlur={handleBlur}
+                        value={values.country}
                         countries={CountryData.countries}
-                      />
+                      /> */}
+                      {/* <CountrySelect
+                        id="country"
+                        name="country"
+                        onChange={(event) => {
+                    
+                          if (event.target.value) {
+                            setFieldValue(
+                              "country",
+                              event.target.value
+                            )
+                          }
+                          setFieldValue(
+                            "country",
+                            event.target.value
+                          )
+                          console.log(initialValues.country)
+                          alert("hi");
+                        }} onBlur={handleBlur}
+                        value={values.country}
+                        countries={CountryData.countries}
+                      /> */}
+                      <SelectInput
+                        id="country"
+                        name="country"
+                        value={values.country}
+                        onChange={handleChange}
+                      >
+                        {/* CountryData.countries[0].label */}
+                        {CountryData.countries.map((country) => (
+                          <option key={country.value} value={country.value}>
+                            {`${country.label} ${country.value}`}
+                          </option>
+                        ))}
+                      </SelectInput>
+                      {errors.country && touched.country ? <div class="alert alert-danger" role="alert">
+                        {errors.country}
+                      </div> : ""}
                       {
                         UserState === "Startup" ?
                           <>
-                            <label className="mt-2 small" htmlFor="industry">Select Industry * </label>
+                            <label className="mt-2 small" htmlFor="industry">Select Industry  </label>
 
-                            <Select id="industry" name="industry" options={[
+                            {/* <Select onChange={handleChange} onBlur={handleBlur} value={values.industry} id="industry" name="industry" options={[
                               { value: 'HealthCare', label: 'Health Care' },
                               { value: 'Retail', label: 'Retail' },
                               { value: 'Entertainment', label: 'Entertainment' },
@@ -189,39 +355,73 @@ const Signup = () => {
                               { value: 'Food', label: 'Food' },
                               { value: 'IT & Tech', label: 'IT & Tech' }]} >
 
-                            </Select>
+                            </Select> */}
+                            <SelectInput onChange={handleChange} onBlur={handleBlur} value={values.industry} id="industry" name="industry">
+                              <option value="HealthCare" key="HealthCare">Health Care</option>
+                              <option value="Retail" key="Retail">Retail</option>
+                              <option value="Entertainment" key="Entertainment">Entertainment</option>
+                              <option value="Education" key="Education">Education</option>
+                              <option value="Food" key="Food">Food</option>
+                              <option value="Tech" key="Tech">IT & Tech</option>
+                            </SelectInput>
                           </> :
                           ""
                       }
-                      <SubmitButton type="button" onClick={() => { setFormState(3); }}>
-                        <span className="text">Continue Step 3</span>
-                      </SubmitButton>
+                      {errors.email || errors.password || errors.country || errors.name || values.email === "" || values.password === "" || values.country === "" || values.name === "" ? <></> :
+                        <SubmitButton type="button" onClick={() => { setFormState(3); }}>
+                          <span className="text">Continue Step 3</span>
+                        </SubmitButton>
+                      }
                     </> :
                     <></>
                   }
 
                   {FormState === 3 ?
                     <>
-                      <label className="mt-0 small" htmlFor="logo"> {UserState === "Startup" ? "Company Logo" : "Avatar Logo"} </label>
-                      <Input type="File" accept="image/*" id="logo" name="logo" />
-                      <label className="mt-2 small mb-2" >Enter Target Country </label>
-                      <CountrySelect
-
+                      <label className="mt-0 small" htmlFor="companyLogo"> {UserState === "Startup" ? "Company Logo" : "Avatar Logo"} </label>
+                      <Input onChange={(event) => {
+                        if (event.currentTarget.files) {
+                          setFieldValue(
+                            "companyLogo",
+                            event.currentTarget.files[0]
+                          )
+                        }
+                      }} onBlur={handleBlur} type="File" accept="image/*" id="companyLogo" name="companyLogo" />
+                      {/* <Input onChange={handleChange} onBlur={handleBlur} type="File" accept="image/*" id="logo" name="logo" /> */}
+                      <label htmlFor="targetcountry" className="mt-2 small mb-2" >Enter Target Country </label>
+                      {/* <CountrySelect
+                        value={values.targetcountry}
+                        onChange={handleChange} onBlur={handleBlur}
+                        id="targetcountry" name="targetcountry"
                         countries={CountryData.countries}
-                      />
+                      /> */}
+                      <SelectInput
+                        id="targetcountry"
+                        name="targetcountry"
+                        value={values.targetcountry}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      >
+                        {/* CountryData.countries[0].label */}
+                        {CountryData.countries.map((country) => (
+                          <option key={country.value} value={country.value}>
+                            {`${country.label} ${country.value}`}
+                          </option>
+                        ))}
+                      </SelectInput>
                       {
                         UserState === "Startup" ?
                           <>
-                            <label htmlFor="companyname"  className="mb-0 small" >Enter Company Name </label>
-                            <Input id="companyname" name="companyname" type="text" placeholder="Company Name" />
+                            <label htmlFor="companyname" className="mb-0 small" >Enter Company Name </label>
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.companyname} id="companyname" name="companyname" type="text" placeholder="Company Name" />
                             <label htmlFor="pitchdeck" className="mb-0 small" >Enter Pitch Deck </label>
-                            <Input id="pitchdeck" name="pitchdeck"  type="text" placeholder="Pitch Deck" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.pitchdeck} id="pitchdeck" name="pitchdeck" type="text" placeholder="Pitch Deck" />
                             <label htmlFor="companybio" className="mt-2 small">Enter Company Bio </label>
-                            <TextArea  id="companybio" name="companybio"  type="text" placeholder="Company Bio"  />
+                            <TextArea onChange={handleChange} onBlur={handleBlur} value={values.companybio} id="companybio" name="companybio" type="text" placeholder="Company Bio" />
                             <label htmlFor="founder" className="mb-0 small" >Enter Founder Name </label>
-                            <Input id="founder" name="founder"   type="text" placeholder="Founder Name" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.founder} id="founder" name="founder" type="text" placeholder="Founder Name" />
                             <label htmlFor="teamsize" className="mb-0 small" >Enter Team Size </label>
-                            <Input id="teamsize" name="teamsize"  type="number" placeholder="Team Size" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.teamsize} id="teamsize" name="teamsize" type="number" placeholder="Team Size" />
 
                           </> : <></>
 
@@ -230,11 +430,11 @@ const Signup = () => {
                         UserState === "Investor" ?
                           <>
                             <label htmlFor="totalinvestment" className="mb-0 small" >Total Investment </label>
-                            <Input id="totalinvestment" name="totalinvestment"   type="number" placeholder="Total Investment" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.totalinvestment} id="totalinvestment" name="totalinvestment" type="number" placeholder="Total Investment" />
                             <label htmlFor="maxinvestment" className="mb-0 small" >Max Investment </label>
-                            <Input id="maxinvestment" name="maxinvestment"   type="number" placeholder="Max Investment" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.maxinvestment} id="maxinvestment" name="maxinvestment" type="number" placeholder="Max Investment" />
                             <label htmlFor="fundingraise" className="mb-0 small" >Funding Raise </label>
-                            <Input id="fundingraise" name="fundingraise"   type="check" placeholder="Funding Raise" />
+                            <Input onChange={handleChange} onBlur={handleBlur} value={values.fundingraise} id="fundingraise" name="fundingraise" type="check" placeholder="Funding Raise" />
 
                           </> : <></>
 
@@ -242,14 +442,30 @@ const Signup = () => {
 
 
                       <label className="mb-0 mt-2 small" htmlFor="website" >Enter Website </label>
-                      <Input type="text" id="website" name="website" placeholder="Website URL" />
-                      <SubmitButton type="button" onClick={() => { setFormState(3); }}>
+                      <Input onChange={handleChange} onBlur={handleBlur} value={values.website} type="text" id="website" name="website" placeholder="Website URL" />
+                      <SubmitButton type="button" onClick={() => { setFormState(2); }}>
                         <span className="text">Back to Step 2</span>
-                      </SubmitButton> 
-                      <SubmitButton type="submit">
-                        <SubmitButtonIcon className="icon" />
-                        <span className="text">{submitButtonText}</span>
                       </SubmitButton>
+                      {UserState === "Investor" || "Startup"
+                        ?
+                        <SubmitButton type="submit" >
+                          <SubmitButtonIcon className="icon" />
+                          <span className="text d-flex align-items-center gap-4">{submitButtonText}
+                            {
+                              isMounted ? "" :
+                                <div class="spinner-border text-light small" style={{ width: "15px", height: "15px" }} role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                                </div>
+                            }
+                          </span>
+                        </SubmitButton>
+
+                        :
+                        <SubmitButton type="button" disabled >
+                          <SubmitButtonIcon className="icon" />
+                          <span className="text">{submitButtonText}</span>
+                        </SubmitButton>
+                      }
                     </>
                     :
                     <></>
