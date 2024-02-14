@@ -97,6 +97,9 @@ import DashHome from 'dashboard/app/views/dashboard/DashHome';
 /* Ready Made Pages (from demos folder) */
 // import EventLandingPage from "demos/EventLandingPage.js";
 import HotelTravelLandingPage from "demos/HotelTravelLandingPage.js";
+import ProfilePage from "demos/Profile.js";
+import Listing from "demos/Listing.js";
+// import HotelTravelLandingPage from "demos/HotelTravelLandingPage.js";
 // import AgencyLandingPage from "demos/AgencyLandingPage.js";
 // import SaaSProductLandingPage from "demos/SaaSProductLandingPage.js";
 // import RestaurantLandingPage from "demos/RestaurantLandingPage.js";
@@ -134,6 +137,7 @@ import Signup from "pages/Signup";
 import Verify from "pages/Verify";
 import ForgetPassword from "pages/ForgetPassword";
 import ResetPassword from "pages/ResetPassword";
+import BuyConnects from "demos/BuyConnects.js";
 
 
 export default function App() {
@@ -176,6 +180,9 @@ export default function App() {
           <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/" element={<HotelTravelLandingPage />} />
 
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/listing" element={<Listing />} />
+          <Route path="/buyconnects" element={<BuyConnects />} />
           <Route path="/login" element={<Login />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/forgetPassword" element={<ForgetPassword />} />

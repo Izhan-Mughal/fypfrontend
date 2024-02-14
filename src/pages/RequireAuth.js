@@ -7,7 +7,7 @@ const RequireAuth = ({ children }) => {
     const location = useLocation();
 
     // List of routes that should not go through authentication
-    const nonAuthRoutes = ["/", "/login", "/register","/verify","/forgetPassword","/resetPassword"];
+    const nonAuthRoutes = ["/", "/login", "/register", "/verify", "/forgetPassword", "/resetPassword", "/profile", "/listing", "/buyconnects"];
 
     // Check if the current route is in the nonAuthRoutes array
     const isNonAuthRoute = nonAuthRoutes.includes(location.pathname);

@@ -39,11 +39,11 @@ export default () => {
             <LogoText>Hyperconnekt</LogoText>
           </LogoContainer>
           <LinksContainer>
-            <Link href="#">Home</Link>
-            <Link href="#">About</Link>
-            <Link href="#">Contact Us</Link>
-            <Link href="#">Blog</Link>
-            <Link href="#">Reviews</Link>
+            <Link href="/">Home</Link>
+            <Link href="/listing">Listings</Link>
+            <Link href="/buyconnects">Buy Connects</Link>
+            <Link href="/login">Login</Link>
+            {/* <Link href="/">Reviews</Link> */}
           </LinksContainer>
           <SocialLinksContainer>
             <SocialLink href="https://facebook.com">

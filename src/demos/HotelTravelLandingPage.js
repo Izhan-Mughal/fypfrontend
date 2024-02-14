@@ -4,6 +4,7 @@ import Hero from "components/hero/FullWidthWithImage.js";
 import Features from "components/features/ThreeColSimple.js";
 import MainFeature from "components/features/TwoColSingleFeatureWithStats.js";
 import SliderCard from "components/cards/ThreeColSlider.js";
+import ServicesCard from "components/cards/AngleList.js";
 import TrendingCard from "components/cards/TwoTrendingPreviewCardsWithImage.js";
 import Blog from "components/blogs/PopularAndRecentBlogPosts.js";
 import Testimonial from "components/testimonials/TwoColumnWithImageAndProfilePictureReview.js";
@@ -14,7 +15,8 @@ import Footer from "components/footers/MiniCenteredFooter.js";
 export default () => (
   <AnimationRevealPage>
     <Hero />
-    <Features />
+    {/* <Features /> */}
+    <ServicesCard/>
     <SliderCard />
     <TrendingCard />
     <MainFeature />

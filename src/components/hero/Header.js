@@ -69,7 +69,7 @@ export default ({
       <TwoColumn>
         <LeftColumn>
           <StyledHeader links={navLinks} collapseBreakpointClass="sm" />
-          <Content>
+          {/* <Content>
             <Heading>{heading}</Heading>
             <Paragraph>{description}</Paragraph>
             <Actions>
@@ -80,9 +80,9 @@ export default ({
                 {secondaryActionText}
               </a>
             </Actions>
-          </Content>
+          </Content> */}
         </LeftColumn>
-        <RightColumn></RightColumn>
+        {/* <RightColumn></RightColumn> */}
       </TwoColumn>
     </Container>
   );
